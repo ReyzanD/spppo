@@ -1,0 +1,15 @@
+# Runtime dependencies for the FastAPI service.
+#
+# Later phases add:
+#   Phase 5: sqlalchemy, alembic, pyjwt, bcrypt
+# Pin exact versions once the whole stack is in place (see docs/PRD.md §11).
+
+fastapi>=0.115
+uvicorn>=0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+
+# Training and inference. The serving path needs both: the vectorizer
+# transforms incoming text and the classifier scores it (NFR-05).
+scikit-learn>=1.5
+joblib>=1.4

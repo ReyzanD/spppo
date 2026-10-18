@@ -1,0 +1,9 @@
+-r requirements.txt
+
+pytest>=8.0
+ruff>=0.6
+
+# starlette's TestClient uses httpx2 when importable and only falls back to
+# httpx (with a deprecation warning) on older starlette releases.
+httpx2>=2.13
+httpx>=0.27
