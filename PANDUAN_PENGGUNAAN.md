@@ -110,6 +110,8 @@ Langkah ini diperlukan untuk memasang dependensi machine learning dan backend, s
    python ml/train_model.py
    ```
 
+   > Jika `ml/data/indonesian_sms_spam.csv` belum ada (misalnya setelah clone baru), script mengunduhnya otomatis dari repositori dataset dan memverifikasi SHA-256 sebelum melatih. File dataset tidak disimpan di Git.
+
    *Proses ini akan membaca dataset `ml/data/indonesian_sms_spam.csv`, membersihkan teks, melakukan ekstraksi fitur TF-IDF, melatih Multinomial Naive Bayes, dan memperbarui artefak di folder `ml/`:*
    - `ml/model.joblib`
    - `ml/vectorizer.joblib`

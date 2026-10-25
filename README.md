@@ -75,6 +75,8 @@ cd ..
 python ml/train_model.py
 ```
 
+> Jika `ml/data/indonesian_sms_spam.csv` belum ada (misalnya setelah clone baru), script akan mengunduhnya otomatis dari repositori dataset dan memverifikasi SHA-256 sebelum melatih. File dataset tidak disimpan di Git.
+
 ### Tahapan Pelatihan:
 1. Memuat dataset `ml/data/indonesian_sms_spam.csv` (1.143 pesan mentah).
 2. Memeriksa dan membuang baris kosong serta data duplikat (1.142 pesan bersih).

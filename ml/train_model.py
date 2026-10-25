@@ -18,8 +18,9 @@ The script follows the requested pipeline in order:
    and the confusion matrix (accuracy is measured, never hardcoded)
 9. write ``model.joblib``, ``vectorizer.joblib`` and ``metadata.json``
 
-The dataset is read from the existing backend copy when available; otherwise it
-is downloaded from UCI to ``ml/data/`` and verified against a pinned SHA-256.
+The dataset is read from an existing local copy when available; otherwise it is
+downloaded from the dataset's GitHub repository to ``ml/data/`` and verified
+against a pinned SHA-256 before training.
 """
 
 from __future__ import annotations
@@ -30,7 +31,6 @@ import json
 import os
 import sys
 import urllib.request
-import zipfile
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -66,9 +66,11 @@ DEFAULT_DATA_CANDIDATES = (
 )
 
 DATASET_NAME = "Indonesian SMS Spam Collection"
-SOURCE_URL = "https://github.com/Andikazidanef15/Sentiment-Analysis-on-Indonesian-SMS-Dataset"
-ARCHIVE_SHA256 = "1587ea43e58e82b14ff1f5425c88e17f8496bfcdb67a583dbff9eefaf9963ce3"
-EXTRACTED_SHA256 = "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d"
+SOURCE_URL = (
+    "https://raw.githubusercontent.com/Andikazidanef15/"
+    "Sentiment-Analysis-on-Indonesian-SMS-Dataset/main/dataset_sms_spam_v1.csv"
+)
+DATASET_SHA256 = "206e8cb15de401b499df4323c58527e9e6eb9e70608bafabeec3516a6d0d717c"
 
 # Configuration already selected by 5-fold CV on the training split during the
 # web-app phase, and kept here so training and the existing service agree.
@@ -97,36 +99,32 @@ def sha256_of(path: Path) -> str:
 
 
 def download_dataset(destination: Path) -> Path:
-    """Download and verify the UCI archive, then extract the TSV."""
+    """Download the dataset CSV and verify it against the pinned SHA-256."""
     data_dir = destination.parent
     data_dir.mkdir(parents=True, exist_ok=True)
-    archive = data_dir / "smsspamcollection.zip"
-    partial = archive.with_name(archive.name + ".part")
+    partial = destination.with_name(destination.name + ".part")
 
     request = urllib.request.Request(SOURCE_URL, headers={"User-Agent": "penipuan-ml/1.0"})
-    with urllib.request.urlopen(request, timeout=60) as response, partial.open("wb") as out:
-        while chunk := response.read(64 * 1024):
-            out.write(chunk)
-    os.replace(partial, archive)
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response, partial.open("wb") as out:
+            while chunk := response.read(64 * 1024):
+                out.write(chunk)
+    except BaseException:
+        # Never leave a half-written file behind for the next run to trust.
+        partial.unlink(missing_ok=True)
+        raise
 
-    actual = sha256_of(archive)
-    if actual != ARCHIVE_SHA256:
-        archive.unlink(missing_ok=True)
+    actual = sha256_of(partial)
+    if actual != DATASET_SHA256:
+        partial.unlink(missing_ok=True)
         raise SystemExit(
-            "Dataset archive checksum mismatch.\n"
-            f"  expected {ARCHIVE_SHA256}\n"
+            "Dataset checksum mismatch.\n"
+            f"  expected {DATASET_SHA256}\n"
             f"  actual   {actual}\n"
             "Refusing to train on an unverified file."
         )
 
-    with zipfile.ZipFile(archive) as zf, zf.open("SMSSpamCollection") as source:
-        destination.write_bytes(source.read())
-
-    if sha256_of(destination) != EXTRACTED_SHA256:
-        raise SystemExit(
-            "Extracted SMSSpamCollection failed its checksum; delete ml/data and retry."
-        )
-
+    os.replace(partial, destination)
     print(f"Downloaded {DATASET_NAME} -> {destination}")
     return destination
 
@@ -142,7 +140,7 @@ def resolve_dataset(explicit: Path | None) -> Path:
         if candidate.is_file():
             return candidate
 
-    return download_dataset(ML_DIR / "data" / "SMSSpamCollection")
+    return download_dataset(ML_DIR / "data" / "indonesian_sms_spam.csv")
 
 
 def load_messages(path: Path) -> tuple[list[str], list[str], str, str]:
