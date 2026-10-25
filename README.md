@@ -4,6 +4,10 @@ Aplikasi berbasis kecerdasan buatan (*Machine Learning*) untuk mendeteksi apakah
 
 Model dibangun menggunakan kombinasi **TF-IDF + Multinomial Naive Bayes** yang dilatih langsung pada dataset **SMS Bahasa Indonesia (Indonesian SMS Spam Collection)**. Layanan inferensi disediakan melalui REST API berbasis **FastAPI**, serta dapat diakses melalui antarmuka **Web React (Vite)** dan aplikasi mobile **Android (Kotlin + Jetpack Compose)**.
 
+> 📖 **Dokumentasi Lengkap:**
+> - [Panduan Penggunaan Repository](PANDUAN_PENGGUNAAN.md) — Panduan instalasi langkah demi langkah (Backend, ML, Web, Android, Pengujian, dan Troubleshooting).
+> - [Laporan Progress & Rencana Kerja](LAPORAN_PROGRESS.md) — Rekapitulasi progres capaian fitur, kendala yang dihadapi & solusinya, serta rencana roadmap pengembangan.
+
 ---
 
 ## Performa Model
